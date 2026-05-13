@@ -6,8 +6,10 @@ seed = None
 W = World(
     name="",
     deltan=5,
-    tmax=3600, #1 hour simulation
-    print_mode=1, save_mode=0, show_mode=1,
+    tmax=3600,   # 1 hour simulation
+    print_mode=True,
+    save_mode=False,
+    show_mode=True,
     random_seed=seed,
     duo_update_time=600
 )
@@ -25,8 +27,8 @@ W1--I1--I2--I3--I4-<E1
 """
 
 signal_time = 20
-sf_1=1
-sf_2=1
+sf_1 = 1
+sf_2 = 1
 
 I1 = W.addNode("I1", 1, 0, signal=[signal_time * sf_1, signal_time * sf_2])
 I2 = W.addNode("I2", 2, 0, signal=[signal_time * sf_1, signal_time * sf_2])
@@ -71,5 +73,3 @@ for t in range(0, 3600, dt):
 
 W.exec_simulation()
 W.analyzer.vehicles_to_pandas().to_csv('output.csv')
-
-

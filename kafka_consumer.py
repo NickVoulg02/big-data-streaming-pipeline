@@ -17,7 +17,7 @@ if __name__ == '__main__':
         value_deserializer=lambda x: json.loads(x.decode('utf-8'))
     )
     print("Consumer started, waiting for messages...")
-    cnt=0
+    cnt = 0
     for message in consumer:
         print(f"message: {message.value}")
         cnt += 1
