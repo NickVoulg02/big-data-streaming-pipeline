@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     # Read uxsim data
     df = pd.read_csv('output.csv')
-    print(df.info())
+    df.info()
     df.to_json("temp.json")
 
     df = df.rename(columns={
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     df['time'] = df['time'].dt.strftime("%d/%m/%Y %H:%M:%S")
 
     pd.set_option('display.max_columns', None)
-    print(df.info())
+    df.info()
 
     print(f'Producer started: {start}')
 
@@ -61,7 +61,5 @@ if __name__ == '__main__':
         grouped_df.apply(lambda row: producer.send(KAFKA_TOPIC_TEST, json.loads(row.to_json())), axis=1)
         # Every 5 seconds
         time.sleep(N)
-
-
 
     producer.flush()

@@ -9,6 +9,7 @@ mongo_uri = os.getenv("MONGO_URI")
 
 db = client.mydatabasedbName = 'vehicle_data'
 
+
 def execute_queries(start_time_str, end_time_str):
     # Connect to MongoDB
     client = MongoClient(mongo_uri, server_api=ServerApi('1'))
@@ -33,11 +34,10 @@ def execute_queries(start_time_str, end_time_str):
             "$gte": start_time.strftime("%d/%m/%Y %H:%M:%S"),
             "$lte": end_time.strftime("%d/%m/%Y %H:%M:%S"),
 
-        },}
+        }, }
     ).sort({
-        "vcount":1})
+        "vcount": 1})
     )
-
 
     if not query1_result:
         raise ValueError("No link found for the specified time range.")
@@ -45,7 +45,8 @@ def execute_queries(start_time_str, end_time_str):
     # Convert the data into a DataFrame
     min_vcount = pd.DataFrame(query1_result)
     print("First Query Results")
-    print(f"WIthin the specified time range, the link {min_vcount.iloc[0]['link']} had the lowest vehicle count, {min_vcount.iloc[0]['vcount']}")
+    print(
+        f"WIthin the specified time range, the link {min_vcount.iloc[0]['link']} had the lowest vehicle count, {min_vcount.iloc[0]['vcount']}")
 
     # Second Query, link with the highest mean vehicle speed
     query2_result = list(processed_collection.find({
@@ -64,9 +65,10 @@ def execute_queries(start_time_str, end_time_str):
     # Convert the data into a DataFrame
     max_vspeed = pd.DataFrame(query2_result)
     print(f"\nSecond Query Results")
-    print(f"Within the specified time range, the link {max_vspeed.iloc[0]['link']} had the highest mean speed, {max_vspeed.iloc[0]['vspeed']}")
+    print(
+        f"Within the specified time range, the link {max_vspeed.iloc[0]['link']} had the highest mean speed, {max_vspeed.iloc[0]['vspeed']}")
 
-    # Third query, vehicle that travelled the longest distance
+    # Third query, vehicle that traveled the longest distance
     query3_result = list(raw_collection.aggregate([
         {  # Match documents that fall within the date range
             "$match": {
@@ -76,20 +78,20 @@ def execute_queries(start_time_str, end_time_str):
                 }
             }
         },
-        {   # For each vehicle on each link, find the maximum position (distance)
+        {  # For each vehicle on each link, find the maximum position (distance)
             "$group": {
-                "_id": { "name": "$name", "link": "$link" },
-                "maxPosition": { "$max": "$position"}
+                "_id": {"name": "$name", "link": "$link"},
+                "maxPosition": {"$max": "$position"}
             }
         },
-        {   # Sum the distances for each vehicle
+        {  # Sum the distances for each vehicle
             "$group": {
                 "_id": "$_id.name",
                 "totalDistance": {"$sum": "$maxPosition"}
             }
         },
-        {   # Sort by vehicle name and total distance
-            "$sort": { "_id.name": 1, "totalDistance": -1 }
+        {  # Sort by vehicle name and total distance
+            "$sort": {"_id.name": 1, "totalDistance": -1}
         }
     ]))
 
@@ -99,8 +101,9 @@ def execute_queries(start_time_str, end_time_str):
     max_distance = pd.DataFrame(query3_result)
     print(f"\nThird Query Results")
     print(
-        f"Within the specified time range, the vehicle team {max_distance.iloc[0]['_id']} travelled the longest distance, {max_distance.iloc[0]['totalDistance']+1.0}")
+        f"Within the specified time range, the vehicle team {max_distance.iloc[0]['_id']} travelled the longest distance, {max_distance.iloc[0]['totalDistance'] + 1.0}")
     # Adding 1 to the max_distance, cause trip_end position equals -1.0
+
 
 if __name__ == '__main__':
     start_time_str = "01/09/2024 00:00:00"

@@ -6,8 +6,9 @@ from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
 
 load_dotenv()  # loads variables from .env
-mongo_uri = os.getenv("MONGO_URI")"
+mongo_uri = os.getenv("MONGO_URI")
 dbName = 'vehicle_data'
+
 
 def create_database():
     try:
@@ -32,13 +33,14 @@ def create_database():
     finally:
         client.close()
 
+
 def processed_df(batch):
     batch.show()
 
     # Each link at specific time
     process = batch.groupBy("time", "link").agg(
-        expr("count(*) as vcount"),     # Aggregate using two operations, the count of vehicles
-        expr("avg(speed) as vspeed")    # And their average speed
+        expr("count(*) as vcount"),  # Aggregate using two operations, the count of vehicles
+        expr("avg(speed) as vspeed")  # And their average speed
     )
     process.show()
 
@@ -51,6 +53,7 @@ def processed_df(batch):
         .option("collection", "processed_data") \
         .save()
 
+
 def raw_mongo_pipeline(batch_df):
     # Saving the unprocessed data in the "raw_data" collection using the save() mode
     batch_df.write \
@@ -61,7 +64,8 @@ def raw_mongo_pipeline(batch_df):
         .option("collection", "raw_data") \
         .save()
 
-def send_batch(batch_df,batch_id):
+
+def send_batch(batch_df, batch_id):
     # Raw data to MongoDB
     raw_mongo_pipeline(batch_df)
     # Processed data to MongoDB
@@ -72,12 +76,12 @@ if __name__ == "__main__":
     create_database()
     # Initializing Spark session
     try:
-        spark_session = SparkSession\
-            .builder\
+        spark_session = SparkSession \
+            .builder \
             .appName("MySparkSession") \
             .config('spark.jars.packages',
                     "org.apache.spark:spark-streaming-kafka-0-10_2.12:3.5.2,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.2,org.mongodb.spark:mongo-spark-connector_2.12:3.0.1") \
-            .config("spark.mongodb.output.uri", uri+"/"+dbName) \
+            .config("spark.mongodb.output.uri", uri + "/" + dbName) \
             .getOrCreate()
 
         # Reduce screen clutter
@@ -119,19 +123,12 @@ if __name__ == "__main__":
         .select(from_json(col("json_string"), schema).alias("raw_data")) \
         .select("raw_data.*")
 
-
     # Writing stream query and processing each batch dataframe in append mode
-    query = raw_df\
-        .writeStream\
-        .outputMode("append")\
+    query = raw_df \
+        .writeStream \
+        .outputMode("append") \
         .foreachBatch(send_batch) \
         .start()
 
     # Terminates the stream on abort
     query.awaitTermination()
-
-
-
-
-
-
