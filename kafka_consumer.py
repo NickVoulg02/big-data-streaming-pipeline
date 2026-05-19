@@ -3,7 +3,7 @@ import os
 from kafka import KafkaConsumer
 
 # Specify Kafka cluster parameters
-KAFKA_BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+KAFKA_BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")
 KAFKA_TOPIC_TEST = os.environ.get("KAFKA_TOPIC_TEST", "vehicle_positions")
 KAFKA_API_VERSION = os.environ.get("KAFKA_API_VERSION", "7.3.1")
 
