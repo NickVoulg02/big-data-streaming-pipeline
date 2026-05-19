@@ -3,16 +3,16 @@ import pandas as pd
 from datetime import datetime
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
+import os
 
 load_dotenv()  # loads variables from .env
-mongo_uri = os.getenv("MONGO_URI")
+uri = os.getenv("MONGO_URI")
 
-db = client.mydatabasedbName = 'vehicle_data'
-
+dbName = 'vehicle_data'
 
 def execute_queries(start_time_str, end_time_str):
     # Connect to MongoDB
-    client = MongoClient(mongo_uri, server_api=ServerApi('1'))
+    client = MongoClient(uri, server_api=ServerApi('1'))
 
     if dbName not in client.list_database_names():
         raise Exception(f"Database doesn't exist.")
@@ -106,6 +106,10 @@ def execute_queries(start_time_str, end_time_str):
 
 
 if __name__ == '__main__':
-    start_time_str = "01/09/2024 00:00:00"
-    end_time_str = "21/09/2024 23:08:55"
+    # Grab today's date dynamically, but set the time window wide enough to catch today's simulation
+    today = datetime.now().strftime("%d/%m/%Y")
+
+    start_time_str = f"{today} 00:00:00"
+    end_time_str = f"{today} 23:59:59"
+
     execute_queries(start_time_str, end_time_str)

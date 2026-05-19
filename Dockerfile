@@ -2,6 +2,11 @@
 # We are using Python 3.12.3 (as used in your project) and the "slim" version to keep the download small.
 FROM python:3.12.3-slim
 
+# Install Java (required for Apache Spark)
+RUN apt-get update && \
+    apt-get install -y default-jre && \
+    apt-get clean
+
 # 2. WORKDIR: Docker Docs advise setting a working directory inside the container.
 # All subsequent commands will be run from inside this /app folder.
 WORKDIR /app

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 1. Zookeeper
   zookeeper:
@@ -10,7 +8,7 @@ services:
     ports:
       - "2181:2181"
 
-  # Kafka Broker
+  # 2. Kafka Broker
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     depends_on:
@@ -20,19 +18,31 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      # This is the most important part for networking:
-      # - PLAINTEXT points to the internal Docker network (for your python container)
-      # - PLAINTEXT_HOST points to your Windows machine (if you run scripts locally)
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  # 3. Your Python Environment
-  python-app:
-    build: .                 # Tells Compose to use your Dockerfile
+  # NEW: 3. Local MongoDB Database
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
     volumes:
-      - .:/app               # The bind mount we set up earlier!
+      - mongo_data:/data/db  # Saves your data permanently
+
+  # 4. Your Python Environment
+  python-app:
+    build: .
+    volumes:
+      - .:/app
     depends_on:
-      - kafka                # Ensures Kafka starts before your python app
-    command: tail -f /dev/null # Keeps the container "awake" indefinitely in the background
+      - kafka
+      - mongo                # Ensures Mongo starts before Python
+    env_file:
+      - .env
+    command: tail -f /dev/null
+
+# This declares the permanent storage volume for MongoDB
+volumes:
+  mongo_data:
