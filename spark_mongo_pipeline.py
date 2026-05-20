@@ -102,6 +102,7 @@ if __name__ == "__main__":
             .option('kafka.bootstrap.servers', bootstrapServers) \
             .option('subscribe', topics) \
             .option('startingOffsets', 'earliest') \
+            .option('failOnDataLoss', 'false') \
             .load()
     except Exception as e:
         print('Error connecting to Kafka')
