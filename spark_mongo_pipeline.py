@@ -4,16 +4,17 @@ from pyspark.sql.types import *
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
+import os
 
 load_dotenv()  # loads variables from .env
-mongo_uri = os.getenv("MONGO_URI")
+uri = os.getenv("MONGO_URI")
 dbName = 'vehicle_data'
 
 
 def create_database():
     try:
         # Create a new client and connect to the server
-        client = MongoClient(mongo_uri, server_api=ServerApi('1'))
+        client = MongoClient(uri, server_api=ServerApi('1'))
 
         # Check if the database exists
         if dbName in client.list_database_names():
@@ -37,10 +38,10 @@ def create_database():
 def processed_df(batch):
     batch.show()
 
-    # Each link at specific time
+    # Aggregate using the count of vehicles and their average speed
     process = batch.groupBy("time", "link").agg(
-        expr("count(*) as vcount"),  # Aggregate using two operations, the count of vehicles
-        expr("avg(speed) as vspeed")  # And their average speed
+        expr("count(*) as vcount"),
+        expr("avg(speed) as vspeed")
     )
     process.show()
 
@@ -90,7 +91,7 @@ if __name__ == "__main__":
         print(e)
 
     # Setting parameters for the Spark session to read from Kafka
-    bootstrapServers = "localhost:9092"
+    bootstrapServers = "kafka:29092"
     topics = "vehicle_positions"
 
     # Streaming data from Kafka topic as a dataframe
@@ -101,6 +102,7 @@ if __name__ == "__main__":
             .option('kafka.bootstrap.servers', bootstrapServers) \
             .option('subscribe', topics) \
             .option('startingOffsets', 'earliest') \
+            .option('failOnDataLoss', 'false') \
             .load()
     except Exception as e:
         print('Error connecting to Kafka')
@@ -127,6 +129,7 @@ if __name__ == "__main__":
     query = raw_df \
         .writeStream \
         .outputMode("append") \
+        .option("checkpointLocation", "/app/spark_checkpoints/") \
         .foreachBatch(send_batch) \
         .start()
 

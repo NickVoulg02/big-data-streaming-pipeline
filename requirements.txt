@@ -1,0 +1,6 @@
+uxsim
+pandas
+kafka-python-ng
+pyspark==3.5.2
+pymongo[srv]
+python-dotenv

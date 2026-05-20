@@ -3,22 +3,21 @@ import pandas as pd
 from datetime import datetime
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
+import os
 
-load_dotenv()  # loads variables from .env
-mongo_uri = os.getenv("MONGO_URI")
+load_dotenv()
+uri = os.getenv("MONGO_URI")
 
-db = client.mydatabasedbName = 'vehicle_data'
+dbName = 'vehicle_data'
 
 
 def execute_queries(start_time_str, end_time_str):
-    # Connect to MongoDB
-    client = MongoClient(mongo_uri, server_api=ServerApi('1'))
+    client = MongoClient(uri, server_api=ServerApi('1'))
 
     if dbName not in client.list_database_names():
         raise Exception(f"Database doesn't exist.")
     db = client[dbName]
 
-    # Collection for processed data
     processed_collection = db.processed_data
     raw_collection = db.raw_data
 
@@ -102,10 +101,13 @@ def execute_queries(start_time_str, end_time_str):
     print(f"\nThird Query Results")
     print(
         f"Within the specified time range, the vehicle team {max_distance.iloc[0]['_id']} travelled the longest distance, {max_distance.iloc[0]['totalDistance'] + 1.0}")
-    # Adding 1 to the max_distance, cause trip_end position equals -1.0
 
 
 if __name__ == '__main__':
-    start_time_str = "01/09/2024 00:00:00"
-    end_time_str = "21/09/2024 23:08:55"
+    # Grab today's date dynamically, but set the time window wide enough to catch today's simulation
+    today = datetime.now().strftime("%d/%m/%Y")
+
+    start_time_str = f"{today} 00:00:00"
+    end_time_str = f"{today} 23:59:59"
+
     execute_queries(start_time_str, end_time_str)

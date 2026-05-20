@@ -6,11 +6,14 @@ import pandas as pd
 from kafka import KafkaProducer
 
 # Specify Kafka cluster parameters
-KAFKA_BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+# Docker's internal network automatically maps the service name kafka to its IP address
+KAFKA_BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")
 KAFKA_TOPIC_TEST = os.environ.get("KAFKA_TOPIC_TEST", "vehicle_positions")
 KAFKA_API_VERSION = os.environ.get("KAFKA_API_VERSION", "7.3.1")
 
 if __name__ == '__main__':
+    print("Waiting 15 seconds for Kafka to initialize...")
+    time.sleep(15)
     producer = KafkaProducer(
         bootstrap_servers=[KAFKA_BOOTSTRAP_SERVERS],
         api_version=KAFKA_API_VERSION,
