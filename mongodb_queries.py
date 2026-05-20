@@ -5,20 +5,19 @@ from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  # loads variables from .env
+load_dotenv()
 uri = os.getenv("MONGO_URI")
 
 dbName = 'vehicle_data'
 
+
 def execute_queries(start_time_str, end_time_str):
-    # Connect to MongoDB
     client = MongoClient(uri, server_api=ServerApi('1'))
 
     if dbName not in client.list_database_names():
         raise Exception(f"Database doesn't exist.")
     db = client[dbName]
 
-    # Collection for processed data
     processed_collection = db.processed_data
     raw_collection = db.raw_data
 
@@ -102,7 +101,6 @@ def execute_queries(start_time_str, end_time_str):
     print(f"\nThird Query Results")
     print(
         f"Within the specified time range, the vehicle team {max_distance.iloc[0]['_id']} travelled the longest distance, {max_distance.iloc[0]['totalDistance'] + 1.0}")
-    # Adding 1 to the max_distance, cause trip_end position equals -1.0
 
 
 if __name__ == '__main__':

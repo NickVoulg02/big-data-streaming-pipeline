@@ -38,10 +38,10 @@ def create_database():
 def processed_df(batch):
     batch.show()
 
-    # Each link at specific time
+    # Aggregate using the count of vehicles and their average speed
     process = batch.groupBy("time", "link").agg(
-        expr("count(*) as vcount"),  # Aggregate using two operations, the count of vehicles
-        expr("avg(speed) as vspeed")  # And their average speed
+        expr("count(*) as vcount"),
+        expr("avg(speed) as vspeed")
     )
     process.show()
 
@@ -128,6 +128,7 @@ if __name__ == "__main__":
     query = raw_df \
         .writeStream \
         .outputMode("append") \
+        .option("checkpointLocation", "/app/spark_checkpoints/") \
         .foreachBatch(send_batch) \
         .start()
 

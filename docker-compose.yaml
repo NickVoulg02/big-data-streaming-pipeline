@@ -1,5 +1,5 @@
 services:
-  # 1. Zookeeper
+  # Zookeeper
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     environment:
@@ -8,7 +8,7 @@ services:
     ports:
       - "2181:2181"
 
-  # 2. Kafka Broker
+  # Kafka Broker
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     depends_on:
@@ -23,7 +23,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  # NEW: 3. Local MongoDB Database
+  # Local MongoDB Database
   mongo:
     image: mongo:latest
     ports:
@@ -31,17 +31,30 @@ services:
     volumes:
       - mongo_data:/data/db  # Saves your data permanently
 
-  # 4. Your Python Environment
-  python-app:
+# The Data Generator & Producer
+  kafka-producer:
     build: .
     volumes:
       - .:/app
     depends_on:
       - kafka
-      - mongo                # Ensures Mongo starts before Python
     env_file:
       - .env
-    command: tail -f /dev/null
+    # This runs the simulation first, then immediately starts streaming the data
+    command: sh -c "python simulation.py && python kafka_producer.py"
+
+  # Spark Processing Pipeline
+  spark-processor:
+    build: .
+    volumes:
+      - .:/app
+    depends_on:
+      - kafka
+      - mongo
+    env_file:
+      - .env
+    # This automatically boots up Spark and starts listening
+    command: sh -c "sleep 15 && python spark_mongo_pipeline.py"
 
 # This declares the permanent storage volume for MongoDB
 volumes:
