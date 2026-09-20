@@ -166,3 +166,7 @@ output.csv
 temp.json
 spark_checkpoints/
 
+data/
+output.csv
+temp.json
+spark_checkpoints/
