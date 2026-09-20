@@ -1,4 +1,4 @@
-name: test and build
+name: build and test
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
         run: cp .env.example .env
 
       - name: Build and Start Docker Compose
-        run: docker-compose up -d --build
+        run: docker compose up -d --build
 
       - name: Wait for Services to be Healthy
         run: sleep 60
@@ -30,8 +30,8 @@ jobs:
         run: docker ps -a
 
       - name: Check Container Logs
-        run: docker-compose logs spark-processor
+        run: docker compose logs spark-processor
 
       - name: Teardown Infrastructure
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v
