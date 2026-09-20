@@ -129,7 +129,7 @@ if __name__ == "__main__":
     query = raw_df \
         .writeStream \
         .outputMode("append") \
-        .option("checkpointLocation", "/app/spark_checkpoints/") \
+        .option("checkpointLocation", "../spark_checkpoints/") \
         .foreachBatch(send_batch) \
         .start()
 
