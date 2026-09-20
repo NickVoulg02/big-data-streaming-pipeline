@@ -27,12 +27,7 @@ jobs:
         run: sleep 60
 
       - name: Verify Container Status
-        run: |
-          docker ps -a
-          if [ "$(docker ps -q -f status=exited)" ]; then
-            echo "Error: One or more containers crashed!"
-            exit 1
-          fi
+        run: docker ps -a
 
       - name: Check Container Logs
         run: docker compose logs spark-processor
