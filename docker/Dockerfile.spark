@@ -1,0 +1,21 @@
+# Stage 1: Build dependencies
+FROM python:3.12.3-slim AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/app/dependencies -r requirements.txt
+
+# Stage 2: Final image with Java
+FROM python:3.12.3-slim
+WORKDIR /app
+
+# Install Java for Spark
+RUN apt-get update && \
+    apt-get install -y default-jre && \
+    apt-get clean
+
+COPY --from=builder /app/dependencies /usr/local
+COPY src/ /app/src/
+WORKDIR /app/src
+
+# Starts the Spark processing pipeline
+CMD ["python", "spark_mongo_pipeline.py"]
