@@ -22,9 +22,9 @@ if __name__ == '__main__':
     )
 
     # Read uxsim data
-    df = pd.read_csv('output.csv')
+    df = pd.read_csv('../data/output.csv')
     df.info()
-    df.to_json("temp.json")
+    df.to_json("../data/temp.json")
 
     df = df.rename(columns={
         'name': 'name',

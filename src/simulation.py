@@ -72,4 +72,4 @@ for t in range(0, 3600, dt):
         demands.append({"start": n1.name, "dest": n2.name, "times": {"start": t, "end": t + dt}, "demand": dem})
 
 W.exec_simulation()
-W.analyzer.vehicles_to_pandas().to_csv('output.csv')
+W.analyzer.vehicles_to_pandas().to_csv('../data/output.csv')

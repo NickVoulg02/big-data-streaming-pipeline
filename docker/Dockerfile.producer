@@ -1,0 +1,15 @@
+# Stage 1: Build dependencies
+FROM python:3.12.3-slim AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/app/dependencies -r requirements.txt
+
+# Stage 2: Final lightweight image
+FROM python:3.12.3-slim
+WORKDIR /app
+COPY --from=builder /app/dependencies /usr/local
+COPY src/ /app/src/
+WORKDIR /app/src
+
+# Runs the simulation then the producer
+CMD ["sh", "-c", "python simulation.py && python kafka_producer.py"]

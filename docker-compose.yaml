@@ -22,6 +22,12 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    # Health check to ensure Kafka is ready before other services start
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
   # Local MongoDB Database
   mongo:
@@ -29,33 +35,42 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongo_data:/data/db  # Saves your data permanently
+      - mongo_data:/data/db
+    # Health check to ensure MongoDB is ready
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-# The Data Generator & Producer
+  # The Data Generator & Producer
   kafka-producer:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.producer
     volumes:
-      - .:/app
+      - ./src:/app/src
+      - ./data:/app/data
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     env_file:
       - .env
-    # This runs the simulation first, then immediately starts streaming the data
-    command: sh -c "python simulation.py && python kafka_producer.py"
 
   # Spark Processing Pipeline
   spark-processor:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.spark
     volumes:
-      - .:/app
+      - ./src:/app/src
     depends_on:
-      - kafka
-      - mongo
+      kafka:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
     env_file:
       - .env
-    # This automatically boots up Spark and starts listening
-    command: sh -c "sleep 15 && python spark_mongo_pipeline.py"
 
-# This declares the permanent storage volume for MongoDB
 volumes:
   mongo_data:

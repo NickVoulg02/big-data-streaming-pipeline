@@ -1,0 +1,37 @@
+name: test and build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Build and Test Docker Stack
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment Variables
+        run: cp .env.example .env
+
+      - name: Build and Start Docker Compose
+        run: docker-compose up -d --build
+
+      - name: Wait for Services to be Healthy
+        run: sleep 60
+
+      - name: Verify Container Status
+        run: docker ps -a
+
+      - name: Check Container Logs
+        run: docker-compose logs spark-processor
+
+      - name: Teardown Infrastructure
+        if: always()
+        run: docker-compose down -v
